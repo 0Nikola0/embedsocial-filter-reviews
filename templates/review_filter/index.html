@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"
+        integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <h1>Filter reviews</h1>
+
+    <form id="post-form" class="filter-form">
+        {% csrf_token %}
+        <label for="rating">Order by rating:</label>
+        <select name="rating" id="rating">
+            <option value="-1">Highest first</option>
+            <option value="1">Lowest first</option>
+        </select>
+        <label for="min-rating">Filter by rating</label>
+        <select name="min-rating" id="min-rating">
+            <option value="5">5</option>
+            <option value="4">4</option>
+            <option value="3">3</option>
+            <option value="2">2</option>
+            <option value="1">1</option>
+        </select>
+        <label for="date">Order by date:</label>
+        <select name="date" id="date">
+            <option value="1">Newest first</option>
+            <option value="-1">Oldest first</option>
+        </select>
+        <label for="prioritize">Prioritize by text:</label>
+        <select name="prioritize" id="prioritize">
+            <option value="1">Yes</option>
+            <option value="0">No</option>
+        </select>
+
+        <button class="filter-button" type="submit">Filter</button>
+    </form>
+
+    
+    <div class="reviews" id="reviews">
+        {% for review in reviews %}
+        
+        <div class="review">
+            <div class="linisko prva">
+                <div class="ime">{{ review.reviewerName }}</div>
+                <div class="rejting">{{ review.rating }}	&#9733;</div>
+            </div>
+            <div class="linisko">
+                <div class="tekst">{{ review.reviewFullText }}</div>
+                <div class="datum">{{ review.reviewCreatedOnDate }}</div>
+            </div>
+        </div>
+    
+        {% endfor %}
+    </div>
+</body>
+
+<style>
+    .review{
+        margin-block: 25px;
+        padding: 5px 15px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1), 0 6px 20px 0 rgba(0, 0, 0, 0.1);
+    }
+    .ime{
+        color: rgb(24, 94, 94);
+    }
+    .linisko{
+        display: flex;
+        justify-content: space-between;
+        margin-block: 5px;
+    }
+    .datum{
+        color: rgb(27, 167, 27);
+    }
+    .rejting{
+        font-weight: bolder;
+        color: rgb(197, 197, 0);
+    }
+    .reviews{
+        padding-inline: 15vw;
+    }
+    h1{
+        color: rgb(49, 49, 49);
+    }
+    .filter-form{
+        display: flex;
+        flex-flow: column;
+        color: rgb(49, 49, 49);
+        padding-inline: 15vw;
+    }
+    label{
+        margin-block: 5px;
+    }
+    select{
+        color: rgb(49, 49, 49);
+        background-color: white;
+        padding: 8px 10px;
+        border: 1px solid gray;
+        border-radius: 5px;
+    }
+    .filter-button{
+        background-color: rgb(38, 157, 197);
+        color: white;
+        width: 70px;
+        height: 30px;
+        border-radius: 4px;
+        border: none;
+        margin-block: 10px;
+    }
+</style>
+
+<script type="text/javascript">
+    $(document).on('submit', '#post-form', function (e) {
+        e.preventDefault();
+        
+        // =============Isprakja filtrite================= //
+        $.ajax({
+            type: 'POST',
+            url: '/send/',
+            data: {
+                rating: $('#rating').val(),
+                min_rating: $('#min-rating').val(),
+                date: $('#date').val(),
+                prioritize: $('#prioritize').val(),
+                csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val(),
+            },
+            // =============Dobiva reviews================= //
+            success: function (data) {
+                $("#reviews").empty();
+                for (let i = 0; i < data.reviews.length; i++) {
+                    var x = data.reviews[i]
+                    var temp = "<div class='review'><div class='linisko prva'><div class='ime'>" + x.reviewerName + "</div><div class='rejting'>" + x.rating + " &#9733;</div></div><div class='linisko'><div class='tekst'>" + x.reviewFullText + "</div><div class='datum'>" + x.reviewCreatedOnDate + "</div></div></div>";
+                    $("#reviews").append(temp);
+                }
+            }
+        });
+    });
+</script>
+
+</html>
